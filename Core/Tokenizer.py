@@ -6,7 +6,7 @@ class Tokenizer:
 
     def __init__(self):
         self.words: List[str] = []
-        self.sentence: List[str] = []
+        self.sentences: List[str] = []
         self.words_count: Dict = {}
         self.vocabulary: List[str] = []
         
@@ -33,8 +33,11 @@ class Tokenizer:
         def __SetSentence():
             with open(self.data_location, "r", encoding="utf-8") as f:
                 sentences_result: List[str] = f.readlines()
+                sentences_result = [line.rstrip("\n") for line in sentences_result]
                 if sentences_result:
                     self.sentences = sentences_result
+                if "\ufeff" in self.sentences[0]:
+                    self.sentences[0] = self.sentences[0].lstrip("\ufeff")
             
         __SetWords()
         __SetSentence()

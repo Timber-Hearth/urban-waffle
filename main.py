@@ -4,6 +4,6 @@ from Core.Tokenizer import Tokenizer
 
 if __name__ == "__main__":
     tokenizer = Tokenizer()
-    auto_embedding = AutoEmbedding()
-    auto_embedding.InitEmbedding(tokenzier = tokenizer)
+    auto_embedding = AutoEmbedding(tokenizer=tokenizer)
+    auto_embedding.VocaPull()
     print("test")
