@@ -1,5 +1,5 @@
 from io import TextIOWrapper
-from typing import List
+from typing import Dict, List
 
 class Tokenizer:
     data_location = "data/corpus.txt"
@@ -7,7 +7,15 @@ class Tokenizer:
     def __init__(self):
         self.words: List[str] = []
         self.sentence: List[str] = []
+        self.words_count: Dict = {}
+        self.vocabulary: List[str] = []
+        
         self.__SetTokens()
+        self.__SetWordCount()
+        self.__SetVocabulary()
+        
+        self.word_to_idx = { word: idx for idx, word in enumerate(self.vocabulary) }
+        self.idx_to_word = { idx: word for idx, word in enumerate(self.vocabulary) }
     
     def GetTokens(self):
         if not self.words:
@@ -31,3 +39,15 @@ class Tokenizer:
         __SetWords()
         __SetSentence()
         
+    def __SetWordCount(self):
+        if not self.words or not self.sentences:
+            self.__SetTokens()
+        else:
+            for item in self.words:
+                if item in self.words_count:
+                    self.words_count[item] += 1
+                else:
+                    self.words_count[item] = 1
+    
+    def __SetVocabulary(self):
+        self.vocabulary = list(self.words_count.keys())
