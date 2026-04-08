@@ -54,3 +54,10 @@ class Tokenizer:
     
     def __SetVocabulary(self):
         self.vocabulary = list(self.words_count.keys())
+        a = 10
+        
+    def ListWordToIndex(self, targets: List[str]) -> List:
+        result = []
+        for v in targets:
+            result.append(self.word_to_idx.get(v))
+        return result

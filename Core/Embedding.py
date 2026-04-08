@@ -28,19 +28,23 @@ class AutoEmbedding:
                 
     def VocaPull(self):
         for single_sentence in self.tokenizer.sentences:
-            self.UpdatePos(sentence=single_sentence)
+            words = single_sentence.split(" ")
+            self.UpdatePos(words=words)
+            self.UpdateNeg(words=words)
         a = 10
                 
-    def UpdatePos(self, sentence: str):
-        words = sentence.split(" ")
-        for i, word in enumerate(words):
-            if (self.window - i) ** 2 >= 0:
-                for q in range(self.window):
-                    index_value = self.tokenizer.word_to_idx.get(words[i - q], -1)
-                    if index_value != -1:
-                        self.pos_pairs[index_value] = 1
-            else:
-                for q in range(self.window):
-                    index_value = self.tokenizer.word_to_idx.get(words[i - q], -1)
-                    if index_value != -1:
-                        self.pos_pairs[index_value] = 1
+    def UpdatePos(self, words: List[str]):
+        positive_pairs = []
+        for i, v in enumerate(words):
+            slice_start: int = i - self.window if i - self.window > 0 else 0
+            slice_end: int = i + self.window if i + self.window <= len(words) else len(words)
+            in_window_tokens: list = words[slice_start : slice_end + 1]
+            in_window_tokens.remove(v)
+            
+            in_window_index: List[int] = self.tokenizer.ListWordToIndex(in_window_tokens)
+            current_core_index: int = self.tokenizer.word_to_idx.get(v)
+            
+            positive_pairs.append([current_core_index, in_window_index])
+            
+    def UpdateNeg(self, words: List[str]):
+        pass
