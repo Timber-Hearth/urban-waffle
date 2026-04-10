@@ -1,4 +1,5 @@
 from io import TextIOWrapper
+import random
 from typing import Dict, List
 
 class Tokenizer:
@@ -61,3 +62,13 @@ class Tokenizer:
         for v in targets:
             result.append(self.word_to_idx.get(v))
         return result
+    
+    def GetNegWords(self, do_not_include_this: List[str], neg_size: int) -> List:
+        cached_items: List = []
+        while(len(cached_items) < neg_size):
+            picked: str = random.choice(self.words)
+            if picked in do_not_include_this:
+                continue
+            else:
+                cached_items.append(picked)
+        return cached_items

@@ -1,5 +1,6 @@
 from random import uniform
 from typing import List
+import random
 from Core.Tokenizer import Tokenizer
 
 
@@ -9,8 +10,12 @@ class AutoEmbedding:
     start_max_rendom = 0.5
     pull_distance = 0.1
     window = 2
+    negative_count = 2
     
-    pos_pairs: List[int] = []
+    pos_flag: int = 1
+    neg_flag: int = 0
+    pos_pairs: List = []
+    neg_pairs: List = []
     
     def __init__(self, tokenizer: Tokenizer):
         self.emb: List[List[float]] = []
@@ -24,27 +29,29 @@ class AutoEmbedding:
                 v2 = uniform(self.start_min_rendom, self.start_max_rendom)
                 v3 = uniform(self.start_min_rendom, self.start_max_rendom)
                 self.emb.append([v1, v2, v3])
-        self.pos_pairs = [0] * len(self.tokenizer.words)
+        self.pos_pairs = []
+        self.neg_pairs = []
                 
     def VocaPull(self):
         for single_sentence in self.tokenizer.sentences:
             words = single_sentence.split(" ")
-            self.UpdatePos(words=words)
-            self.UpdateNeg(words=words)
-        a = 10
+            self.UpdatePosNeg(words=words)
                 
-    def UpdatePos(self, words: List[str]):
-        positive_pairs = []
+    def UpdatePosNeg(self, words: List[str]):
         for i, v in enumerate(words):
             slice_start: int = i - self.window if i - self.window > 0 else 0
             slice_end: int = i + self.window if i + self.window <= len(words) else len(words)
             in_window_tokens: list = words[slice_start : slice_end + 1]
+            current_core_index: int = self.tokenizer.word_to_idx.get(v)
+            
+            neg_list: List = self.tokenizer.GetNegWords(do_not_include_this=in_window_tokens, neg_size=self.negative_count)
+            neg_list = self.tokenizer.ListWordToIndex(neg_list)
+            for out_of_window in neg_list:
+                self.neg_pairs.append([current_core_index, out_of_window, self.neg_flag])
+
             in_window_tokens.remove(v)
             
             in_window_index: List[int] = self.tokenizer.ListWordToIndex(in_window_tokens)
-            current_core_index: int = self.tokenizer.word_to_idx.get(v)
+            for in_window in in_window_index:
+                self.pos_pairs.append([current_core_index, in_window, self.pos_flag])
             
-            positive_pairs.append([current_core_index, in_window_index])
-            
-    def UpdateNeg(self, words: List[str]):
-        pass
