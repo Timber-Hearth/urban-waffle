@@ -13,7 +13,7 @@ class AutoEmbedding:
     window = 2
     negative_count = 2
     
-    epoch = 100000
+    epoch = 10000
     learning_rate = 0.001
     
     pos_flag: int = 1
@@ -38,6 +38,7 @@ class AutoEmbedding:
                 
     def VocaPull(self):
         for i in range(self.epoch):
+            print(str(i) + " epoch started.")
             self.pos_pairs = []
             self.neg_pairs = []
             for single_sentence in self.tokenizer.sentences:
