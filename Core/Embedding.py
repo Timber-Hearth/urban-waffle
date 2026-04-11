@@ -2,6 +2,7 @@ from math import exp
 from random import uniform
 from typing import List
 import random
+import json
 from Core.Tokenizer import Tokenizer
 
 
@@ -79,3 +80,23 @@ class AutoEmbedding:
             for i in range(self.dim):
                 center[i] -= self.learning_rate * (delta * target[i])
                 target[i] -= self.learning_rate * (delta * center[i])
+    
+    def save_embeddings(self, file_path: str = "embeddings.json"):
+        """학습된 embedding을 JSON 파일로 저장"""
+        data = {
+            "vocabulary": self.tokenizer.vocabulary,
+            "embeddings": self.emb,
+            "dim": self.dim
+        }
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        print(f"Embeddings saved to {file_path}")
+    
+    def load_embeddings(self, file_path: str = "embeddings.json"):
+        """저장된 embedding을 JSON 파일에서 불러오기"""
+        with open(file_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        self.emb = data["embeddings"]
+        self.dim = data["dim"]
+        print(f"Embeddings loaded from {file_path}")
+        return data["vocabulary"]

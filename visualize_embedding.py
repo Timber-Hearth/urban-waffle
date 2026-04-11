@@ -83,46 +83,33 @@ def prepare_embedding_plot_data(tokenizer: Tokenizer, embeddings: List[List[floa
 def main():
     parser = argparse.ArgumentParser(description="AutoEmbedding 시각화 스크립트")
     parser.add_argument("--top", type=int, default=20, help="시각화할 상위 단어 개수")
-    parser.add_argument("--train", action="store_true", help="학습을 수행한 뒤 임베딩을 시각화")
-    parser.add_argument("--epochs", type=int, default=1, help="학습 epoch 수 (train 옵션 사용 시)")
     parser.add_argument("--words", nargs="*", help="시각화할 특정 단어 목록")
+    parser.add_argument("--load", type=str, default="embeddings.json", help="불러올 embeddings 파일 (기본값: embeddings.json)")
     args = parser.parse_args()
+
+    if not args.load:
+        print("저장된 embedding 파일이 없습니다. main.py를 먼저 실행하세요.")
+        return
 
     tokenizer = Tokenizer()
     model = AutoEmbedding(tokenizer)
 
-    if args.train:
-        print(f"학습 시작: epoch={args.epochs}")
-        build_example_embeddings(tokenizer, model, train=True, epochs=args.epochs)
-    else:
-        print("학습 없이 현재 임베딩을 시각화합니다.")
+    try:
+        model.load_embeddings(args.load)
+    except FileNotFoundError:
+        print(f"파일을 찾을 수 없습니다: {args.load}")
+        print("main.py를 먼저 실행하여 embeddings.json을 생성하세요.")
+        return
 
-    vocabulary = tokenizer.vocabulary
     embeddings = model.emb
 
-    if not embeddings or len(vocabulary) == 0:
+    if not embeddings or len(tokenizer.vocabulary) == 0:
         print("임베딩 또는 vocabulary가 비어 있습니다.")
         return
 
-    selected_words = []
-    selected_coords = []
-
-    if args.words:
-        for word in args.words:
-            if word in tokenizer.word_to_idx:
-                idx = tokenizer.word_to_idx[word]
-                selected_words.append(word)
-                selected_coords.append(embeddings[idx])
-            else:
-                print(f"단어를 찾을 수 없음: {word}")
-    else:
-        for idx, word in enumerate(vocabulary[: args.top]):
-            selected_words.append(word)
-            selected_coords.append(embeddings[idx])
-
-    if any(len(coord) != 3 for coord in selected_coords):
-        print("현재 시각화는 3차원 임베딩만 지원합니다. dim=3으로 설정하세요.")
-        return
+    selected_words, selected_coords = prepare_embedding_plot_data(
+        tokenizer, embeddings, top=args.top, words=args.words
+    )
 
     print(f"시각화할 단어 수: {len(selected_words)}")
     plot_embeddings_3d(selected_words, selected_coords, title="AutoEmbedding 3D Visualization")
