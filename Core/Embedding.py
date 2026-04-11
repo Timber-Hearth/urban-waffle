@@ -13,6 +13,9 @@ class AutoEmbedding:
     window = 2
     negative_count = 2
     
+    epoch = 100000
+    learning_rate = 0.001
+    
     pos_flag: int = 1
     neg_flag: int = 0
     pos_pairs: List = []
@@ -34,10 +37,13 @@ class AutoEmbedding:
         self.neg_pairs = []
                 
     def VocaPull(self):
-        for single_sentence in self.tokenizer.sentences:
-            words = single_sentence.split(" ")
-            self.SetPosNeg(words=words)
-        self.UpdateVocaVector()
+        for i in range(self.epoch):
+            self.pos_pairs = []
+            self.neg_pairs = []
+            for single_sentence in self.tokenizer.sentences:
+                words = single_sentence.split(" ")
+                self.SetPosNeg(words=words)
+            self.UpdateVocaVector()
                 
     def SetPosNeg(self, words: List[str]):
         for i, v in enumerate(words):
@@ -66,3 +72,9 @@ class AutoEmbedding:
             
             dot = sum(center[i] * target[i] for i in range(self.dim))
             sigmoid = 1 / (1 + exp(-dot))
+            
+            delta = sigmoid - flag
+            
+            for i in range(self.dim):
+                center[i] -= self.learning_rate * (delta * target[i])
+                target[i] -= self.learning_rate * (delta * center[i])
