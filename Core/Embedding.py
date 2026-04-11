@@ -1,3 +1,4 @@
+from math import exp
 from random import uniform
 from typing import List
 import random
@@ -35,9 +36,10 @@ class AutoEmbedding:
     def VocaPull(self):
         for single_sentence in self.tokenizer.sentences:
             words = single_sentence.split(" ")
-            self.UpdatePosNeg(words=words)
+            self.SetPosNeg(words=words)
+        self.UpdateVocaVector()
                 
-    def UpdatePosNeg(self, words: List[str]):
+    def SetPosNeg(self, words: List[str]):
         for i, v in enumerate(words):
             slice_start: int = i - self.window if i - self.window > 0 else 0
             slice_end: int = i + self.window if i + self.window <= len(words) else len(words)
@@ -54,4 +56,13 @@ class AutoEmbedding:
             in_window_index: List[int] = self.tokenizer.ListWordToIndex(in_window_tokens)
             for in_window in in_window_index:
                 self.pos_pairs.append([current_core_index, in_window, self.pos_flag])
+                
+    def UpdateVocaVector(self):
+        update_targets: List[List[int, int, int]] = self.neg_pairs + self.pos_pairs
+        for item in update_targets:
+            center: List[int, int, int] = self.emb[item[0]]
+            target: List[int, int, int] = self.emb[item[1]]
+            flag: int = item[2]
             
+            dot = sum(center[i] * target[i] for i in range(self.dim))
+            sigmoid = 1 / (1 + exp(-dot))
